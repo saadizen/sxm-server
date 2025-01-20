@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
+<meta name="description" content="SiriusXM Radio Activator">
+<title>SiriusXM Radio Activator</title>
+<link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.svg') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="header">
+        <h1>SiriusXM Radio Activator</h1>
+    </div>
+    <div class="box">
+        <div id="status-icon"></div> <!-- Placeholder for the status icon -->
+
+        <form method="post">
+            <input type="text" id="radio_id" name="radio_id" class="radio_id_entry" placeholder="Enter Radio ID" autofocus="autofocus"  value="{{ request.form.get('radio_id', '') }}">
+            <button type="submit" class="button">Activate</button>
+        </form>
+        
+        {% if result and result.responses %}
+        <div class="info hide" id="info">
+            <button id="copy" onclick="copy()">Copy</button>
+            <div id="info-copy">
+                {% for key, value in result.responses.items() %}
+                    <span class="response-key">{{ key.upper() }}</span>
+                    <span class="response-value">{{ value }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    <script>
+        // Ensure `result` is passed correctly from the server
+        const result = {{ result | tojson if result else 'null' }}; 
+
+        // Get the placeholder for the status icon
+        const statusIconDiv = document.getElementById('status-icon');
+
+        // Function to dynamically set the status icon
+        function updateStatusIcon() {
+            // Clear any existing content
+            statusIconDiv.innerHTML = '';
+
+            if (!result || result === null) {
+                // If no result, don't display anything
+                return;
+            }
+
+            if (result.success) {
+                // Render the success icon
+                const successIcon = document.createElement('img');
+                successIcon.src = "{{ url_for('static', filename='images/success.svg') }}";
+                successIcon.alt = "Activation Success";
+                successIcon.className = "status";
+                successIcon.title = "Click for info";
+                successIcon.onclick = info; // Attach the info function
+                statusIconDiv.appendChild(successIcon);
+            } else if (result.success === false) {
+                // Render the failure icon
+                const failureIcon = document.createElement('img');
+                failureIcon.src = "{{ url_for('static', filename='images/failure.svg') }}";
+                failureIcon.alt = "Activation Failure";
+                failureIcon.className = "status";
+                failureIcon.title = "Click for info";
+                failureIcon.onclick = info; // Attach the info function
+                statusIconDiv.appendChild(failureIcon);
+            }
+        }
+
+        // Call the function to update the status icon
+        updateStatusIcon();
+
+        // Safely log responses if they exist
+        if (result && result.responses) {
+            Object.entries(result.responses).forEach(([key, value]) => {
+                console.log(`Key: ${key}, Value: ${value}`);
+            });
+        }
+
+        // Toggle the visibility of the "info" section
+        function info() {
+            const infoDiv = document.getElementById("info");
+            if (infoDiv) {
+                infoDiv.classList.toggle("show");
+                infoDiv.classList.toggle("hide");
+            }
+        }
+
+        // Copy the content of the "info-copy" div to the clipboard
+        function copy() {
+            const infoCopyDiv = document.getElementById("info-copy");
+            if (infoCopyDiv) {
+                let text = infoCopyDiv.textContent.trim();
+                text = text.replaceAll(' ', '').replaceAll('\n\n', '\n').replace(/^\s*\n/gm, '');
+                navigator.clipboard.writeText(text);
+                const copyButton = document.querySelector('#copy');
+                if (copyButton) {
+                    copyButton.textContent = 'Copied!';
+                }
+            }
+        }
+    </script>
+</body>
+</html>
