@@ -1,3 +1,7 @@
-# Deploy on Vercel
+Previously there was info here about installing this on Vercel. 
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Frichardk80%2Fvercelsxm)
+That was an error on my part. 
+
+You can't install Docker containers on Vercel. 
+
+Sorry
